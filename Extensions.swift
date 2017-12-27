@@ -303,6 +303,23 @@ public extension UIView {
             self.alpha = 0.0
         }, completion: completion)
     }
+    
+    func asImage() -> UIImage? {
+        if #available(iOS 10.0, *) {
+            let renderer = UIGraphicsImageRenderer(bounds: bounds)
+            return renderer.image { rendererContext in
+                layer.render(in: rendererContext.cgContext)
+            }
+        } else {
+            UIGraphicsBeginImageContextWithOptions(self.bounds.size, self.isOpaque, 0.0)
+            defer { UIGraphicsEndImageContext() }
+            guard let currentContext = UIGraphicsGetCurrentContext() else {
+                return nil
+            }
+            self.layer.render(in: currentContext)
+            return UIGraphicsGetImageFromCurrentImageContext()
+        }
+    }
 }
 
 extension UIViewController: UIDocumentInteractionControllerDelegate {
@@ -391,6 +408,27 @@ extension UIColor {
                        green: .random() * 0.9,
                        blue:  .random() * 0.9,
                        alpha: 1.0)
+    }
+    
+    func isLight() -> Bool {
+        if let colorSpace = self.cgColor.colorSpace {
+            if colorSpace.model == .rgb {
+                guard let components = cgColor.components, components.count > 2 else {return false}
+                
+                let brightness = ((components[0] * 299) + (components[1] * 587) + (components[2] * 114)) / 1000
+                
+                return (brightness > 0.5)
+            }
+            else {
+                var white : CGFloat = 0.0
+                
+                self.getWhite(&white, alpha: nil)
+                
+                return white >= 0.5
+            }
+        }
+        
+        return false
     }
 }
 
