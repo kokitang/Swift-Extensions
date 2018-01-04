@@ -702,56 +702,74 @@ class FileKit: ProgressViewDelegate {
         viewController.present(documentProviderMenu, animated: true, completion: nil)
     }
     
-    open class func showFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, url: URL) {
-        let doc = UIDocumentInteractionController.init(url: url)
-        doc.delegate = viewController
-        if doc.presentPreview(animated: true) {
-            // Successfully displayed
+    /*
+     httpCache: Decide how to preview HTTP protocol resources. If true, download and cached; If false, open in external browser (Default is Safari)
+     */
+    open class func showFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, url: URL, httpCache: Bool = true) {
+        if url.absoluteString.hasPrefix("http") {
+            if httpCache {
+                // Download file & show preview
+                self.downloadFile(from: viewController, link: url.absoluteString, theme: .Dark)
+            } else {
+                // Open file in Safari, without download to cache
+                if #available(iOS 10.0, *) {
+                    UIApplication.shared.open(url)
+                } else {
+                    // Fallback on earlier versions
+                    UIApplication.shared.openURL(url)
+                }
+            }
         } else {
-            // Couldn't display
+            let doc = UIDocumentInteractionController.init(url: url)
+            doc.delegate = viewController
+            if doc.presentPreview(animated: true) {
+                // Successfully displayed
+            } else {
+                // Couldn't display
+            }
         }
     }
     
     /* FileKit.downloadFile(from: self, link: "https://www.gnu.org/s/hello/manual/hello.pdf") */
-//    open class func downloadFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, link: String, theme: ProgressViewTheme = .Default) {
-//        // Clear Cache
-//        clearCachedFile(forLink: link)
-//        
-//        // Initializing
-//        var req: DownloadRequest? = nil
-//        let destination = DownloadRequest.suggestedDownloadDestination(for: .documentDirectory)
-//        let url = URL.init(string: link)
-//        
-//        // Show Download layer
-//        let progressView = ProgressView.init(frame: kScreenRect, labelKey: "downloading", theme: theme) {
-//            req?.cancel()
-//            }.show()
-//        
-//        // Start Downloading
-//        req = Alamofire.download(url!, to: destination).downloadProgress { progress in
-//            print(progress.fractionCompleted)
-//            // Update Progress
-//            progressView.setProgress(progress: Float(progress.fractionCompleted))
-//            }.response { downloadResponse in
-//                // Dismiss Download layer
-//                progressView.dismiss(completionHandler: { success in
-//                    if downloadResponse.error != nil {
-//                        // TODO: handle error
-//                    } else {
-//                        // Show Preview of downloaded file
-//                        if let url = downloadResponse.destinationURL {
-//                            let doc = UIDocumentInteractionController.init(url: url)
-//                            doc.delegate = viewController
-//                            if doc.presentPreview(animated: true) {
-//                                // Successfully displayed
-//                            } else {
-//                                // Couldn't display
-//                            }
-//                        }
-//                    }
-//                })
-//        }
-//    }
+    open class func downloadFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, link: String, theme: ProgressViewTheme = .Default) {
+        // Clear Cache
+        clearCachedFile(forLink: link)
+        
+        // Initializing
+        var req: DownloadRequest? = nil
+        let destination = DownloadRequest.suggestedDownloadDestination(for: .documentDirectory)
+        let url = URL.init(string: link)
+        
+        // Show Download layer
+        let progressView = ProgressView.init(frame: kScreenRect, labelKey: "downloading", theme: theme) {
+            req?.cancel()
+            }.show()
+        
+        // Start Downloading
+        req = Alamofire.download(url!, to: destination).downloadProgress { progress in
+            print(progress.fractionCompleted)
+            // Update Progress
+            progressView.setProgress(progress: Float(progress.fractionCompleted))
+            }.response { downloadResponse in
+                // Dismiss Download layer
+                progressView.dismiss(completionHandler: { success in
+                    if downloadResponse.error != nil {
+                        // TODO: handle error
+                    } else {
+                        // Show Preview of downloaded file
+                        if let url = downloadResponse.destinationURL {
+                            let doc = UIDocumentInteractionController.init(url: url)
+                            doc.delegate = viewController
+                            if doc.presentPreview(animated: true) {
+                                // Successfully displayed
+                            } else {
+                                // Couldn't display
+                            }
+                        }
+                    }
+                })
+        }
+    }
     
     open class func deleteFile(from viewController: UIViewController? = nil, url:URL) {
         let fileManager = FileManager.default
