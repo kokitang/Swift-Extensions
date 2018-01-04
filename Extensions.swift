@@ -691,3 +691,98 @@ class MapKit {
 //    }
 //}
 
+//import UIKit
+//import Alamofire
+
+class FileKit: ProgressViewDelegate {
+    
+    open class func takeFile(from viewController: UIViewController&UIDocumentMenuDelegate) {
+        let documentProviderMenu = UIDocumentMenuViewController(documentTypes: ["com.apple.iwork.pages.pages", "com.apple.iwork.numbers.numbers", "com.apple.iwork.keynote.key","public.image", "com.apple.application", "public.item","public.data", "public.content", "public.audiovisual-content", "public.movie", "public.audiovisual-content", "public.video", "public.audio", "public.text", "public.data", "public.zip-archive", "com.pkware.zip-archive", "public.composite-content", "public.text"], in: .import)
+        documentProviderMenu.delegate = viewController
+        viewController.present(documentProviderMenu, animated: true, completion: nil)
+    }
+    
+    open class func showFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, url: URL) {
+        let doc = UIDocumentInteractionController.init(url: url)
+        doc.delegate = viewController
+        if doc.presentPreview(animated: true) {
+            // Successfully displayed
+        } else {
+            // Couldn't display
+        }
+    }
+    
+    /* FileKit.downloadFile(from: self, link: "https://www.gnu.org/s/hello/manual/hello.pdf") */
+//    open class func downloadFile(from viewController: UIViewController&UIDocumentInteractionControllerDelegate, link: String, theme: ProgressViewTheme = .Default) {
+//        // Clear Cache
+//        clearCachedFile(forLink: link)
+//        
+//        // Initializing
+//        var req: DownloadRequest? = nil
+//        let destination = DownloadRequest.suggestedDownloadDestination(for: .documentDirectory)
+//        let url = URL.init(string: link)
+//        
+//        // Show Download layer
+//        let progressView = ProgressView.init(frame: kScreenRect, labelKey: "downloading", theme: theme) {
+//            req?.cancel()
+//            }.show()
+//        
+//        // Start Downloading
+//        req = Alamofire.download(url!, to: destination).downloadProgress { progress in
+//            print(progress.fractionCompleted)
+//            // Update Progress
+//            progressView.setProgress(progress: Float(progress.fractionCompleted))
+//            }.response { downloadResponse in
+//                // Dismiss Download layer
+//                progressView.dismiss(completionHandler: { success in
+//                    if downloadResponse.error != nil {
+//                        // TODO: handle error
+//                    } else {
+//                        // Show Preview of downloaded file
+//                        if let url = downloadResponse.destinationURL {
+//                            let doc = UIDocumentInteractionController.init(url: url)
+//                            doc.delegate = viewController
+//                            if doc.presentPreview(animated: true) {
+//                                // Successfully displayed
+//                            } else {
+//                                // Couldn't display
+//                            }
+//                        }
+//                    }
+//                })
+//        }
+//    }
+    
+    open class func deleteFile(from viewController: UIViewController? = nil, url:URL) {
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: url.path) {
+            print("FILE AVAILABLE")
+            do {
+                try fileManager.removeItem(at: url)
+            } catch {
+                print(error)
+            }
+        } else {
+            print("FILE NOT AVAILABLE")
+        }
+    }
+    
+    open class func clearCachedFile(forLink link: String) {
+        let s = link.components(separatedBy: "/")
+        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
+        let url = URL(fileURLWithPath: path)
+        
+        let filePath = url.appendingPathComponent(s.last!).path
+        let fileManager = FileManager.default
+        if fileManager.fileExists(atPath: filePath) {
+            print("FILE AVAILABLE")
+            do {
+                try fileManager.removeItem(atPath: filePath)
+                print("Cache Cleaned")
+            } catch {
+                print(error)
+            }
+        }
+    }
+}
+
