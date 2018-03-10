@@ -58,7 +58,7 @@ func sendWhatsapp(text: String, to contact:String?) {
     }
     
     // By Web API
-//    let whatsappURL = URL(string: "https://api.whatsapp.com/send?phone=+85264087633&text=Invitation")
+//    let whatsappURL = URL(string: "https://api.whatsapp.com/send?phone=+85261234567&text=Invitation")
 //    if UIApplication.shared.canOpenURL(whatsappURL!) {
 //        UIApplication.shared.openURL(whatsappURL!)
 //    }
@@ -71,6 +71,14 @@ extension Array {
 }
 
 extension String {
+    func isoString() -> String {
+        if let qString = self.cString(using: .utf8) {
+            return String.init(cString: qString, encoding: .isoLatin1)!
+        } else {
+            return self
+        }
+    }
+    
     public static func utf8(string: String) -> String {
         if let cString = string.cString(using: .isoLatin1) {
             return String.init(utf8String: cString)!
@@ -84,26 +92,6 @@ extension String {
             return String.init(utf8String: cString)!
         } else {
             return self
-        }
-    }
-    
-    func apiLanguageKey() -> String {
-        if self == "zh-Hant" {
-            return "tw"
-        } else if self == "zh-Hans" {
-            return "cn"
-        } else {
-            return "en"
-        }
-    }
-    
-    public static func APILanguageKey(languageKey: String) -> String {
-        if languageKey == "zh-Hant" {
-            return "tw"
-        } else if languageKey == "zh-Hans" {
-            return "cn"
-        } else {
-            return "en"
         }
     }
     
@@ -133,6 +121,23 @@ extension String {
         }
         return false
     }
+    
+    //
+    //    func replaceEmpty() -> String {
+    //        if self == "" || self.isEmpty {
+    //            return "no_data".localized()
+    //        } else {
+    //            return self
+    //        }
+    //    }
+    //
+    //    func replaceEmptyDisplayLabel() -> String {
+    //        if self == "" || self.isEmpty {
+    //            return "no_data".localized() + " debug: (display_label)"
+    //        } else {
+    //            return self
+    //        }
+    //    }
         
 }
 
@@ -155,6 +160,26 @@ extension UILabel {
         self.attributedText = attributedString
     }
     
+}
+
+extension UITextField {
+    func setPlaceholder (_ placeholder: String! = nil, color: UIColor! = nil) {
+        let p = placeholder ?? (self.placeholder ?? "")
+        let c = color ?? (textColor ?? .black)
+        
+        self.attributedPlaceholder = NSAttributedString(
+            string: p,
+            attributes: [NSAttributedStringKey.foregroundColor: c]
+        )
+    }
+    
+    func setPlaceholder(color: UIColor! = nil) {
+        setPlaceholder(nil, color: color)
+    }
+    
+    func setPlaceholder(_ placeholder: String! = nil) {
+        setPlaceholder(placeholder, color: nil)
+    }
 }
 
 extension UIWindow {
